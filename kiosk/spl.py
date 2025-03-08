@@ -2,10 +2,11 @@
 Top level module for SPL display kiosk application
 """
 import argparse
+import os
 import socket
 
 from threading import Lock
-from flask import Flask, render_template
+from flask import Flask, render_template, request, send_from_directory
 from flask_socketio import SocketIO, emit
 
 app = Flask(__name__)
@@ -42,7 +43,14 @@ class SqlSocket:
 @app.route("/")
 def index():
     """ render the page """    
-    return render_template('index.html', async_mode=socketio.async_mode)
+    return render_template('index.html',
+                           async_mode=socketio.async_mode,
+                           src='/home/pete/working/SPL/kiosk/templates/segment-display.js')
+
+@app.route('/js/<path:filename>')
+def serve_static(filename):
+    root_dir = os.path.dirname(os.getcwd())
+    return send_from_directory(os.path.join(root_dir, 'static', 'js'), filename)
 
 @socketio.event
 def connect():
@@ -80,5 +88,4 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     PORTNO = args.portno
-
     socketio.run(app)

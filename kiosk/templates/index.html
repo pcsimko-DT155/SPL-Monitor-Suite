@@ -10,11 +10,13 @@
   }
 
   body {
+      background-color: #303036;      
       display: table;
   }
   
   .spl-display {
-      font-size: 64px;
+      background-color: #303036;
+      font-size: 100px;
       text-align: center;
       display: table-cell;
       vertical-align: middle;
@@ -25,23 +27,45 @@
 {% block scripts %}
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
 <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.8.1/socket.io.min.js"></script>
+<!--[if lt IE 9]>
+    <script type="text/javascript" src="excanvas.js"><script>
+<![endif]-->
+<script type="text/javascript" src="{{ url_for('static', filename='js/segment-display.js') }}"></script>
 <script type="text/javascript" charset="utf-8">
   $(document).ready(function(){
+      var display = new SegmentDisplay("display");
+      display.pattern         = "##.#";
+      display.displayAngle    = 6;
+      display.digitHeight     = 26;
+      display.digitWidth      = 16;
+      display.digitDistance   = 2.5;
+      display.segmentWidth    = 2.5;
+      display.segmentDistance = 0.3;
+      display.segmentCount    = 7;
+      display.cornerType      = 3;
+      display.colorOn         = "#e92734";
+      display.colorOff        = "#4b0f21";
+      display.draw();
+      
       var socket = io.connect('http://' + document.domain + ':' + location.port);
 
       socket.on('connect', function() {
           socket.emit('am up', {data: 'I\'m connected'});
       });
       socket.on('spl update', function(msg) {
-          $('#spl-value').text(msg.data).html()
+          display.setValue(msg.data);
+//          $('#spl-value').text(msg.data).html()
       });
   });
+</script>
+<script type="text/javascript">
 </script>
 {% endblock %}
 
 {% block body %}
-<div class="spl-display" id='spl-value'></div>
-<div class="spl-display">
-  {{ text }}
+<div class="spl-display" id='spl-value'>
+  <canvas id="display" width="260" height="240">
+    This browser is not supported
+  </canvas>
 </div>
 {% endblock %}

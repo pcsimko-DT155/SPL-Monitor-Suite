@@ -3,6 +3,7 @@
 {% block style %}
 <style>
   html, body {
+      overflow-y: hidden;
       height: 100%;
       margin: 0;
       padding: 0;
@@ -10,12 +11,12 @@
   }
 
   body {
-      background-color: #303036;      
+      background-color: #202026;      
       display: table;
   }
   
   .spl-display {
-      background-color: #303036;
+      background-color: #202026;
       font-size: 100px;
       text-align: center;
       display: table-cell;
@@ -64,7 +65,7 @@
 
 {% block body %}
 <div class="spl-display" id='spl-value'>
-  <canvas id="display" width="260" height="240">
+  <canvas id="display" width="520" height="480">
     This browser is not supported
   </canvas>
 </div>

@@ -77,7 +77,7 @@ SoundMonitor::configTavg(std::chrono::milliseconds tavg)
     return false;
   }
 
-  if (tavg.count() < 1251000) {
+  if (tavg.count() < 125) {
     std::cerr << "tavg less than supported min value" << std::endl;
     return false;
   }

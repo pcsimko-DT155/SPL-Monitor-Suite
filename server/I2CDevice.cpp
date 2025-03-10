@@ -1,12 +1,14 @@
 #include "I2CDevice.hpp"
 
-#include <stdexcept>
+#include <fcntl.h>
 #include <filesystem>
 #include <filesystem>
 #include <iostream>
+#include <stdexcept>
 #include <unistd.h>
 
 #include <linux/i2c-dev.h>
+// Terrible portability hack between arm-linux-gnueabihf-gcc on Mac OS X and native gcc on raspbian
 #ifndef I2C_M_RD
 #include <linux/i2c.h>
 #endif

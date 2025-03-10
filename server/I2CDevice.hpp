@@ -1,7 +1,6 @@
 /*
  * Based on James Dunne's (github JamesDunne) C library for reading/writing I2C slave device registers
  */
-#include <fcntl.h>
 #include <string>
 
 class I2CDevice {

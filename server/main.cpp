@@ -39,7 +39,8 @@ int main(int argc, char *argv[]) {
 
   gServer = std::make_shared<TCPServer>(portno);
   gMonitor = std::make_shared<SoundMonitor>();  
-  
+
+  gMonitor->configTavg(std::chrono::milliseconds{250});
   (void) std::signal(SIGINT, signalHandler);
   
   gServer->listen();
@@ -51,7 +52,7 @@ int main(int argc, char *argv[]) {
   while (not done) {
     std::string msg(std::to_string(gMonitor->spl()));
     gServer->addMsg(std::move(msg));
-    std::this_thread::sleep_for(std::chrono::milliseconds(400));
+    std::this_thread::sleep_for(std::chrono::milliseconds(600));
   }
 
   tServer.join();

@@ -7,7 +7,7 @@ import socket
 
 from threading import Lock
 from flask import Flask, render_template, request, send_from_directory
-from flask_socketio import SocketIO, emit
+from flask_socketio import SocketIO, emit # pylint grumbles about missing package here
 
 app = Flask(__name__)
 socketio = SocketIO(app)
@@ -26,6 +26,9 @@ class SqlSocket:
 
     def __del__(self):
         pass
+
+    def __repr__(self):
+        return f"SqlSocket(socket='{self.socket}')"
 
     def backgroundThread(self):
         """

@@ -3,11 +3,14 @@
 
 #include <atomic>
 #include <chrono>
+#include <memory>
 #include <string>
 #include <deque>
 
 static const size_t kDefaultQueueSize = 10;
 static const std::chrono::milliseconds kDefaultSamplePeriod{100};
+
+class I2CDevice;
 
 class SoundMonitor {
   struct SplQueue {
@@ -31,9 +34,11 @@ class SoundMonitor {
 public:
   SoundMonitor(std::chrono::milliseconds samplePeriod = kDefaultSamplePeriod,
                const std::string& device="/dev/i2c-1",
-               int i2cAddress = 0x48);
+               unsigned char i2cAddress = 0x48,
+               bool freqAnalysisOn = false);
   ~SoundMonitor();
 
+  bool configTavg(std::chrono::milliseconds tavg);
   void stop();
   void monitor();
 
@@ -41,13 +46,14 @@ public:
   
 private:
   int file_;
-  int i2cAddress_;
   bool ready_;
   bool done_;
   std::atomic_char spl_;
   std::atomic<float> fspl_;
   SplQueue splQueue_;
   std::chrono::milliseconds samplePeriod_;
+  bool freqAnalysisOn_;
+  std::unique_ptr<I2CDevice> dB_meter_;
 };
 
 #endif // SOUNDMONITOR_HPP

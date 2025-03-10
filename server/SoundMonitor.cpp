@@ -1,4 +1,5 @@
 #include "SoundMonitor.hpp"
+#include "I2CDevice.hpp"
 
 #include <fcntl.h>
 #include <iostream>
@@ -8,6 +9,14 @@
 #include <sys/ioctl.h>
 
 #include <thread>
+
+#define TAVG_HI 0x07
+#define TAVG_LO 0x08
+#define DECIBEL 0x0A
+
+static const unsigned char kTavgHiRegAddr = TAVG_HI;
+static const unsigned char kTavgLoRegAddr = TAVG_LO;
+static const unsigned char kDbRegAddr     = DECIBEL;
 
 float
 SoundMonitor::SplQueue::average() const
@@ -25,11 +34,13 @@ SoundMonitor::SplQueue::average() const
 
 SoundMonitor::SoundMonitor(std::chrono::milliseconds samplePeriod,
                            const std::string& device,
-                           int i2cAddress) :
-  i2cAddress_(i2cAddress),
+                           unsigned char i2cAddress,
+                           bool freqAnalysisOn) :
   ready_(true),
   done_(false),
-  samplePeriod_(samplePeriod)
+  samplePeriod_(samplePeriod),
+  freqAnalysisOn_(freqAnalysisOn),
+  dB_meter_( std::make_unique<I2CDevice>(device, i2cAddress))
 {
   file_ = open(device.c_str(), O_RDWR);
   if (file_ < 0)
@@ -58,24 +69,53 @@ SoundMonitor::stop()
   done_ = true;
 }
 
+bool
+SoundMonitor::configTavg(std::chrono::milliseconds tavg)
+{
+  if (tavg.count() > 1000) {
+    std::cerr << "tavg greater than supported max value" << std::endl;
+    return false;
+  }
+
+  if (tavg.count() < 1251000) {
+    std::cerr << "tavg less than supported min value" << std::endl;
+    return false;
+  }
+  
+  auto t = static_cast<uint16_t>(tavg.count());
+  
+  u_char hiByte = (t >> 8) & 0xFF;
+  u_char loByte = t & 0xFF;
+
+  if (dB_meter_->write(kTavgHiRegAddr, hiByte) < 0) {
+    std::cerr << "Failed to write TAVG_HI register" << std::endl;
+    return false;
+  }
+  if (dB_meter_->write(kTavgLoRegAddr, loByte) < 0) {  
+    std::cerr << "Failed to write TAVG_LO register" << std::endl;
+    return false;
+  }
+
+  return true;
+  
+}
+
 void
 SoundMonitor::monitor()
 {
   char data;
-
+  unsigned char db;
+  
   while (not done_) {
-    data = 0x0A;
-    if (write(file_, &data, 1) != 1) {
-      std::cerr << "Failed to write register " << data << std::endl;
-      break;
-    }
 
-    if (read(file_, &data, 1) != 1) {
-      std::cerr << "Failed to read register " << data << std::endl;
-      break;
+    if (dB_meter_->read(kDbRegAddr, &db) < 0) {
+      std::cerr << "Failed to read DECIBEL register" << std::endl;
     }
+    splQueue_.add(db);    
 
-    splQueue_.add(data);
+    if (freqAnalysisOn_) {
+      // TODO: fill the spectrum vector
+    }
     std::this_thread::sleep_for(samplePeriod_);
   }
 

@@ -1,6 +1,7 @@
 #include "TCPConnection.hpp"
 
 #include <iostream>
+#include <regex>
 #include <unistd.h>
 #include <errno.h>
 
@@ -56,12 +57,15 @@ TCPConnection::send()
       std::lock_guard<std::mutex> lock(mtx_);
       if (not msgs_.empty()) {
         auto msg = msgs_.front();
-//        std::cout << "send" << std::endl;
-        ssize_t nbytes = write(client_sock_, msg.c_str(), msg.length());
-//        std::cout << "nbytes: " << nbytes << std::endl;
-        if (nbytes < 0) {
-//          client_sock_ = -1;
-          running_ = false;
+        if ( not std::regex_match(msg, std::regex("^[+-]?\\d*\\.\\d+([eE][+-]?\\d+)?$")) ) {
+          std::cerr << "unexpected msg format" << std::endl;
+        }
+        else {
+          msg += ";";
+          ssize_t nbytes = write(client_sock_, msg.c_str(), msg.length());
+          if (nbytes < 0) {
+            running_ = false;
+          }
         }
         msgs_.pop();
       }

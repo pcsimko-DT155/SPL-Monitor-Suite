@@ -110,6 +110,8 @@ SoundMonitor::monitor()
 
     if (dB_meter_->read(kDbRegAddr, &db) < 0) {
       std::cerr << "Failed to read DECIBEL register" << std::endl;
+      std::this_thread::sleep_for(samplePeriod_);      
+      continue;
     }
     splQueue_.add(db);    
 

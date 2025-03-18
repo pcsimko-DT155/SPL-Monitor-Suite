@@ -23,6 +23,7 @@ public:
 
   void addMsg(const std::string& msg);
   void addMsg(std::string&& msg);
+  void addMsg(float msg);  
 
   void terminate();
   

@@ -1,11 +1,11 @@
 cmake_minimum_required(VERSION 3.10)
 
-project(TCPServer VERSION 1.0)
+project(SPLServer VERSION 1.0)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
-add_executable(TCPServer
+add_executable(SPLServer
   main.cpp
   I2CDevice.cpp
   SoundMonitor.cpp
@@ -13,4 +13,4 @@ add_executable(TCPServer
   TCPConnection.cpp
   )
 
-install(TARGETS TCPServer DESTINATION bin)
+install(TARGETS SPLServer DESTINATION bin)

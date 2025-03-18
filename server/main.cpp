@@ -50,8 +50,7 @@ int main(int argc, char *argv[]) {
 
   int count = 0;
   while (not done) {
-    std::string msg(std::to_string(gMonitor->spl()));
-    gServer->addMsg(std::move(msg));
+    gServer->addMsg(gMonitor->spl());
     std::this_thread::sleep_for(std::chrono::milliseconds(600));
   }
 

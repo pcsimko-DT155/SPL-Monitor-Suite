@@ -77,6 +77,17 @@ TCPServer::addMsg(std::string&& msg)
 }
 
 void
+TCPServer::addMsg(float msg)
+{
+  std::lock_guard<std::mutex> lock(mtx_);  
+  for(auto& connection : connections_) {
+    if (connection->connected()) {
+      connection->addMsg(std::to_string(msg));
+    }
+  }
+}
+
+void
 TCPServer::prune()
 {
   while (not done_) {

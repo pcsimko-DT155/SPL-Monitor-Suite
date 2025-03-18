@@ -9,8 +9,8 @@ from threading import Lock
 from flask import Flask, render_template, request, send_from_directory
 from flask_socketio import SocketIO, emit # pylint grumbles about missing package here
 
-app = Flask(__name__)
-socketio = SocketIO(app)
+#app = Flask(__name__)
+#socketio = SocketIO(app)
 GTHREAD = None
 thread_lock = Lock()
 PORTNO = None
@@ -19,10 +19,11 @@ class SqlSocket:
     """
     Wrapper class to initialize data for the SPL monitor's background thread
     """
-    def __init__(self, hostip, port):
+    def __init__(self, hostip, port, sio):
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.socket.connect((hostip, port))
         self.socket.settimeout(0.5)
+        self.sio = sio
 
     def __del__(self):
         pass
@@ -36,48 +37,58 @@ class SqlSocket:
         """
         while True:
             try:
-                spl = self.socket.recv(1024).decode()
+                msg = self.socket.recv(1024).decode()
             except TimeoutError:
                 pass
             else:
-                socketio.emit('spl update', {'data' : f"{float(spl):.1f}"})
-                socketio.sleep(0)
+                spl = msg.split(";")[-2]
+                print(f"{float(spl):.1f}")
+                self.sio.emit('spl update', {'data' : f"{float(spl):.1f}"})
+                self.sio.sleep(0)
 
-@app.route("/")
-def index():
-    """ render the page """    
-    return render_template('index.html',
-                           async_mode=socketio.async_mode,
-                           src='/home/pete/working/SPL/kiosk/templates/segment-display.js')
+def create_app(arg1):
+    app = Flask(__name__)
+    socketio = SocketIO(app)
+    PORTNO = arg1
+    
+    @app.route("/")
+    def index():
+        """ render the page """    
+        return render_template('index.html',
+                               async_mode=socketio.async_mode,
+                               src='/home/pete/working/SPL/kiosk/templates/segment-display.js')
 
-@app.route('/js/<path:filename>')
-def serve_static(filename):
-    root_dir = os.path.dirname(os.getcwd())
-    return send_from_directory(os.path.join(root_dir, 'static', 'js'), filename)
+    @app.route('/js/<path:filename>')
+    def serve_static(filename):
+        root_dir = os.path.dirname(os.getcwd())
+        return send_from_directory(os.path.join(root_dir, 'static', 'js'), filename)
 
-@socketio.event
-def connect():
-    """
-    Connect to the SPL monitor program's TCP server and spin up the reader thread
-    """
-    if PORTNO is None:
-        print("Connect to port 1234")
-        sqlSocket = SqlSocket('127.0.0.1', 1234)
-    else:
-        print(f"Connect to port {PORTNO}")
-        sqlSocket = SqlSocket('127.0.0.1', int(PORTNO))
+    @socketio.event
+    def connect():
+        """
+        Connect to the SPL monitor program's TCP server and spin up the reader thread
+        """
+        if PORTNO is None:
+            print("Connect to default port 1234", flush=True)
+            sqlSocket = SqlSocket('127.0.0.1', 1234, socketio)
+        else:
+            print(f"Connect to port {PORTNO}", flush=True)
+            sqlSocket = SqlSocket('127.0.0.1', int(PORTNO), socketio)
+            
+            global GTHREAD
+            with thread_lock:
+                if GTHREAD is None:
+                    GTHREAD = socketio.start_background_task(sqlSocket.backgroundThread)
+                    emit('my_response', {'data': 'Connected', 'count': 0})
 
-    global GTHREAD
-    with thread_lock:
-        if GTHREAD is None:
-            GTHREAD = socketio.start_background_task(sqlSocket.backgroundThread)
-    emit('my_response', {'data': 'Connected', 'count': 0})
 
+    @socketio.on('disconnect')
+    def testDisconnect(reason):
+        """ Disconnect from client """
+        print('Client disconnected', request.sid, reason, flush=True)
 
-@socketio.on('disconnect')
-def testDisconnect(reason):
-    """ Disconnect from client """
-    print('Client disconnected', request.sid, reason)
+    return app
+
 
 def catchIt():
     """ Catch the KeyboardInterrupt """

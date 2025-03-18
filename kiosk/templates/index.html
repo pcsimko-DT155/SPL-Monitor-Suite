@@ -35,7 +35,6 @@
 <script type="text/javascript" charset="utf-8">
   $(document).ready(function(){
       var display = new SegmentDisplay("display");
-      display.pattern         = "##.#";
       display.displayAngle    = 6;
       display.digitHeight     = 26;
       display.digitWidth      = 16;
@@ -47,15 +46,20 @@
       display.colorOn         = "#e92734";
       display.colorOff        = "#4b0f21";
       display.draw();
-      
+
       var socket = io.connect('http://' + document.domain + ':' + location.port);
 
       socket.on('connect', function() {
-          socket.emit('am up', {data: 'I\'m connected'});
+          socket.emit('am up', {data: "I'm connected"});
       });
       socket.on('spl update', function(msg) {
+          if (msg.data < 100) {
+              display.pattern = "##.#";
+          }
+          else {
+              display.pattern = "###.#";
+          }
           display.setValue(msg.data);
-//          $('#spl-value').text(msg.data).html()
       });
   });
 </script>

@@ -54,7 +54,7 @@ def create_app(portno):
         """ render the page """    
         return render_template('index.html',
                                async_mode=socketio.async_mode,
-                               src='/home/pete/working/SPL/kiosk/templates/segment-display.js')
+                               src='~/working/SPL/kiosk/templates/segment-display.js')
 
     @app.route('/js/<path:filename>')
     def serve_static(filename):

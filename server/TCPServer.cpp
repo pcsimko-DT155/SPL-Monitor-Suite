@@ -109,7 +109,7 @@ TCPServer::wait()
   sockaddr_in client;  
   while (not done_ and (new_socket = accept(sock_desc_, (struct sockaddr *)&client, (socklen_t*)&c))) {
     if ( new_socket < 0 ) {
-      throw std::runtime_error(std::string("Accept failed")); // TODO: fix code
+      throw std::runtime_error(std::string("Accept failed")); // TODO: fix err code
     }
     std::cout << "Adding socket... " << new_socket << std::endl;
 

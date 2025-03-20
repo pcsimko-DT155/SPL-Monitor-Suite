@@ -39,7 +39,7 @@ TCPServer::~TCPServer()
 }
 
 void
-TCPServer::terminate()
+TCPServer::stop()
 {
   std::cout << "terminate" << std::endl;
   for (auto& connection : connections_) {

@@ -25,7 +25,7 @@ public:
   void addMsg(std::string&& msg);
   void addMsg(float msg);  
 
-  void terminate();
+  void stop();
   
 private:
   void prune();

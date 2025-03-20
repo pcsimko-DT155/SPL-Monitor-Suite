@@ -1,7 +1,7 @@
 
 ## Raspberry Pi Decibel Monitor
 
-This repo contains the necessary code to run a Raspberry Pi 3+ as a decibel monitor in kiosk mode.
+This repo contains the necessary code to run a Raspberry Pi 3B+ as a decibel monitor in kiosk mode.
 The software is separated into two independent components: A monitor application that periodically reads a decibel 
 meter and writes a running average of measured values to a TCP socket and a GUI client that reads 
 from the socket and displays the data via the web. Decoupling the monitor and GUI allows the monitor to serve dB
@@ -21,7 +21,8 @@ periodically writes the running average to the socket. The monitor executable ca
 
 ### GUI Client
 
-The GUI client leverages flask python with a single (very small) top-level script that reads the TCP socket from a thread. This can be run from a WSGI launched at startup.
+The GUI client leverages flask python with a single (very small) top-level script that reads the TCP socket from a thread. This can be run from a WSGI launched at startup. The 7 segment display
+was taken from [3quarks](http://www.3quarks.com/en/SegmentDisplay/).
 
 ### Startup script
 Not strictly required by the application, the `kiosk.sh` script is given as a simple guideline to be followed or ignored as desired. Fully disabling the mouse cursor may require changing 

@@ -1,7 +1,7 @@
 
 ## Raspberry Pi Decibel Monitor
 
-This repo contains the necessary code to run a Raspberry Pi 3+ as a decibel monitor in kiosk mode.
+This repo contains the necessary code to run a Raspberry Pi 3B+ as a decibel monitor in kiosk mode.
 The software is separated into two independent components: A monitor application that periodically reads a decibel 
 meter and writes a running average of measured values to a TCP socket and a GUI client that reads 
 from the socket and displays the data via the web. Decoupling the monitor and GUI allows the monitor to serve dB
